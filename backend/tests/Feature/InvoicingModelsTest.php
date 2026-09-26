@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\InvoiceStatus;
-use App\Enums\ReturnStatus;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -40,7 +39,6 @@ class InvoicingModelsTest extends TestCase
         $this->assertSame(2, $item->remainingQuantity());
         $return = $invoice->returns()->create([
             'return_number' => 'RET-1',
-            'status' => ReturnStatus::Completed,
             'returned_at' => now(),
         ]);
         $returnItem = $return->items()->create([
@@ -70,7 +68,7 @@ class InvoicingModelsTest extends TestCase
 
         $secondReturn = $invoice->returns()->create([
             'return_number' => 'RET-2',
-            'status' => ReturnStatus::Cancelled,
+            'returned_at' => now(),
         ]);
         $secondReturn->items()->create([
             'invoice_item_id' => $item->id,
@@ -82,13 +80,12 @@ class InvoicingModelsTest extends TestCase
         $this->assertSame(1, $item->returnedQuantity());
         $this->assertSame(1, $item->remainingQuantity());
 
-        $secondReturn->update(['status' => ReturnStatus::Completed]);
+        $secondReturn->update(['returned_at' => now()]);
 
         $this->assertSame(2, $item->returnedQuantity());
         $this->assertSame(0, $item->remainingQuantity());
 
         $this->assertSame(InvoiceStatus::Issued, $invoice->fresh()->status);
-        $this->assertSame(ReturnStatus::Completed, $return->fresh()->status);
         $this->assertSame('25.00', $invoice->fresh()->total);
         $this->assertSame('12.50', $product->fresh()->price);
         $this->assertSame('12.50', $item->fresh()->unit_price);

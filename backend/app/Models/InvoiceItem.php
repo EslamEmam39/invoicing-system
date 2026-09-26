@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\ReturnStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -39,9 +38,7 @@ class InvoiceItem extends Model
 
     public function returnedQuantity(): int
     {
-        return (int) $this->returnItems()
-            ->whereRelation('salesReturn', 'status', ReturnStatus::Completed->value)
-            ->sum('quantity');
+        return (int) $this->returnItems()->sum('quantity');
     }
 
     public function remainingQuantity(): int

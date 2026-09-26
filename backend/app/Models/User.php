@@ -17,6 +17,11 @@ class User extends Authenticatable
 
     protected $fillable = ['name', 'email', 'password', 'role'];
 
+    public function isAdmin(): bool
+    {
+        return $this->role === UserRole::Admin;
+    }
+
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class);

@@ -11,7 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->string('return_number', 50)->unique();
             $table->foreignId('invoice_id')->constrained()->restrictOnDelete();
-            $table->enum('status', ['completed', 'cancelled'])->default('completed');
             $table->timestamp('returned_at')->nullable();
             $table->timestamps();
         });

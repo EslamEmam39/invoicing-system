@@ -17,10 +17,10 @@ class AuthenticationTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response = $this->postJson('/api/login', [
+        $response = $this->postJson('/api/auth/login', [
             'email' => $user->email,
             'password' => 'password',
-            'device_name' => 'feature-test',
+
         ]);
 
         $response->assertOk()
@@ -36,7 +36,7 @@ class AuthenticationTest extends TestCase
     {
         User::factory()->create(['email' => 'employee@example.com']);
 
-        $this->postJson('/api/login', [
+        $this->postJson('/api/auth/login', [
             'email' => 'employee@example.com',
             'password' => 'wrong-password',
         ])->assertUnprocessable()
@@ -50,7 +50,7 @@ class AuthenticationTest extends TestCase
         $token = $user->createToken('feature-test');
 
         $this->withToken($token->plainTextToken)
-            ->postJson('/api/logout')
+            ->postJson('/api/auth/logout')
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('message', 'Logged out successfully.');

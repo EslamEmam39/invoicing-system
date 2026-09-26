@@ -22,7 +22,7 @@ class AuthService
         }
 
         return [
-            'token' => $this->authRepository->createToken($user, $credentials['device_name'] ?? 'api-client'),
+            'token' => $this->authRepository->createToken($user, 'api-client'),
             'user' => $user,
         ];
     }

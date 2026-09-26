@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\InvoiceStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,13 @@ class Invoice extends Model
     use SoftDeletes;
 
     protected $fillable = ['invoice_number', 'customer_id', 'user_id', 'status', 'issued_at'];
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return $user->isAdmin()
+            ? $query
+            : $query->where($this->qualifyColumn('user_id'), $user->getKey());
+    }
 
     protected function casts(): array
     {
