@@ -14,23 +14,11 @@ class SalesReturnPolicy
 
     public function view(User $user, SalesReturn $model): bool
     {
-        return true;
+        return $user->isAdmin() || $model->invoice()->where('user_id', $user->getKey())->exists();
     }
 
     public function create(User $user): bool
     {
         return true;
     }
-
-    public function update(User $user, SalesReturn $model): bool
-    {
-        return true;
-    }
-
-    public function delete(User $user, SalesReturn $model): bool
-    {
-        return $user->isAdmin();
-    }
-
-
 }

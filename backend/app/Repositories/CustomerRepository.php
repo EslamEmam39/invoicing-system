@@ -24,6 +24,11 @@ class CustomerRepository
         return $model->refresh();
     }
 
+    public function hasInvoices(Customer $model): bool
+    {
+        return $model->invoices()->exists();
+    }
+
     public function delete(Customer $model): void
     {
         $model->delete();

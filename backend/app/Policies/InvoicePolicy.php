@@ -22,16 +22,6 @@ class InvoicePolicy
         return true;
     }
 
-    public function update(User $user, Invoice $model): bool
-    {
-        return $user->isAdmin() || (string) $model->user_id === (string) $user->getKey();
-    }
-
-    public function delete(User $user, Invoice $model): bool
-    {
-        return $user->isAdmin();
-    }
-
     public function cancel(User $user, Invoice $model): bool
     {
         return $user->isAdmin();

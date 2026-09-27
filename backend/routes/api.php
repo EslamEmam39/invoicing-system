@@ -4,9 +4,9 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\InvoiceController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\SalesReturnController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
-
 
 // Authentication Routes
 Route::prefix('auth')->group(function () {
@@ -20,6 +20,12 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
 
+    Route::prefix('returns')->group(function () {
+        Route::get('/', [SalesReturnController::class, 'index'])->name('returns.index');
+        Route::post('/', [SalesReturnController::class, 'store'])->name('returns.store');
+        Route::get('/{salesReturn}', [SalesReturnController::class, 'show'])->name('returns.show');
+    });
+
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index'])->name('products.index');
         Route::post('/', [ProductController::class, 'store'])->name('products.store');
@@ -27,7 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::patch('/{product}', [ProductController::class, 'update'])->name('products.patch');
     });
-
 
     Route::prefix('customers')->group(function () {
         Route::get('/', [CustomerController::class, 'index'])->name('customers.index');
@@ -46,6 +51,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('admin')
         ->name('admin.')
         ->middleware(EnsureUserIsAdmin::class)
-        ->group(__DIR__ . '/admin.php');
+        ->group(__DIR__.'/admin.php');
 });
-

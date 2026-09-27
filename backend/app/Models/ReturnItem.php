@@ -2,14 +2,13 @@
 
 namespace App\Models;
 
-
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 
 class ReturnItem extends Model
 {
     protected $fillable = ['return_id', 'invoice_item_id', 'quantity', 'unit_price'];
+
     protected function casts(): array
     {
         return [
@@ -23,7 +22,6 @@ class ReturnItem extends Model
     {
         return $this->belongsTo(SalesReturn::class, 'return_id');
     }
-
 
     public function invoiceItem(): BelongsTo
     {

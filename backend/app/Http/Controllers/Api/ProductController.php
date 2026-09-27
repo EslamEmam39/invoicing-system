@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\IndexResourceRequest;
 use App\Http\Requests\Api\Product\ProductRequest;
+use App\Http\Resources\PaginatedResourceCollection;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Services\ProductService;
@@ -24,7 +25,7 @@ class ProductController extends Controller
     {
         $items = $this->service->paginate((int) $request->validated('per_page', 15));
 
-        return $this->successResponse(ProductResource::collection($items)->response()->getData(true));
+        return $this->paginatedResponse(new PaginatedResourceCollection($items, ProductResource::class));
     }
 
     public function store(ProductRequest $request): JsonResponse

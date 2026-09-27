@@ -13,7 +13,7 @@ class Invoice extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['invoice_number', 'customer_id', 'user_id', 'status', 'issued_at'];
+    protected $fillable = ['invoice_number', 'customer_id', 'user_id', 'status', 'issued_at', 'total'];
 
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {
@@ -31,24 +31,20 @@ class Invoice extends Model
         ];
     }
 
-
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
-
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-
     public function items(): HasMany
     {
         return $this->hasMany(InvoiceItem::class);
     }
-
 
     public function returns(): HasMany
     {

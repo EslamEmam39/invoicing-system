@@ -2,13 +2,19 @@
 
 namespace App\Traits;
 
+use App\Http\Resources\PaginatedResourceCollection;
 use Illuminate\Http\JsonResponse;
 
 trait ApiResponse
 {
-    /**
-     * Return a standardized successful API response.
-     */
+    protected function paginatedResponse(PaginatedResourceCollection $collection): JsonResponse
+    {
+        return $collection->additional([
+            'success' => true,
+            'message' => 'Request completed successfully.',
+        ])->response();
+    }
+
     protected function successResponse(mixed $data = null, string $message = 'Request completed successfully.', int $status = 200): JsonResponse
     {
         return response()->json([
@@ -18,11 +24,6 @@ trait ApiResponse
         ], $status);
     }
 
-    /**
-     * Return a standardized failed API response.
-     *
-     * @param  array<string, mixed>  $errors
-     */
     protected function errorResponse(string $message, int $status, array $errors = []): JsonResponse
     {
         return response()->json([

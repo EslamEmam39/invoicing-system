@@ -2,15 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 class SalesReturn extends Model
 {
     protected $fillable = ['return_number', 'invoice_id', 'returned_at'];
+
     protected $table = 'returns';
+
+    public function totalAmount(): string
+    {
+        $total = '0.00';
+        foreach ($this->items as $item) {
+            $total = bcadd($total, $item->subtotal, 2);
+        }
+
+        return $total;
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return $user->isAdmin()
+            ? $query
+            : $query->whereHas('invoice', fn($invoice) => $invoice->where('user_id', $user->getKey()));
+    }
 
     protected function casts(): array
     {
@@ -19,12 +37,10 @@ class SalesReturn extends Model
         ];
     }
 
-
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class);
     }
-
 
     public function items(): HasMany
     {

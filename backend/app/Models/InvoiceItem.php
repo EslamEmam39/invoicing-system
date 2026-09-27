@@ -6,11 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
-
 class InvoiceItem extends Model
 {
-    protected $fillable = ['invoice_id', 'product_id', 'quantity', 'unit_price'];
+    protected $fillable = ['invoice_id', 'product_id', 'quantity', 'unit_price', 'subtotal'];
+
     protected function casts(): array
     {
         return [
@@ -19,7 +18,6 @@ class InvoiceItem extends Model
             'subtotal' => 'decimal:2',
         ];
     }
-
 
     public function invoice(): BelongsTo
     {

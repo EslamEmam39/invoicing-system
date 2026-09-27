@@ -8,7 +8,7 @@ class IndexResourceRequest extends ApiRequest
     {
         return [
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
-            'page' => ['sometimes', 'integer', 'min:1']
+            'page' => ['sometimes', 'integer', 'min:1'],
         ];
     }
 }

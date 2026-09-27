@@ -45,10 +45,10 @@ class InvoiceApiTest extends TestCase
         $foreign = Invoice::create(['invoice_number' => 'INV-2', 'customer_id' => $customer->id, 'user_id' => $other->id]);
         Sanctum::actingAs($employee);
         $this->getJson('/api/invoices?per_page=1')->assertOk()
-            ->assertJsonPath('data.meta.total', 1)->assertJsonPath('data.data.0.id', $own->id);
+            ->assertJsonPath('meta.total', 1)->assertJsonPath('data.0.id', $own->id);
         $this->getJson("/api/invoices/{$foreign->id}")->assertForbidden();
         Sanctum::actingAs(User::factory()->create(['role' => UserRole::Admin]));
-        $this->getJson('/api/invoices')->assertOk()->assertJsonPath('data.meta.total', 2);
+        $this->getJson('/api/invoices')->assertOk()->assertJsonPath('meta.total', 2);
         $this->getJson("/api/invoices/{$foreign->id}")->assertOk();
         $this->putJson("/api/invoices/{$own->id}", [])->assertStatus(405);
         $this->deleteJson("/api/invoices/{$own->id}")->assertStatus(405);

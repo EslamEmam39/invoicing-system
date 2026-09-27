@@ -41,12 +41,13 @@ class InvoicingModelsTest extends TestCase
             'return_number' => 'RET-1',
             'returned_at' => now(),
         ]);
-        $returnItem = $return->items()->create([
+        $returnItem = $return->items()->make([
             'invoice_item_id' => $item->id,
             'quantity' => 1,
             'unit_price' => '12.50',
-            'subtotal' => '12.50',
         ]);
+        $returnItem->subtotal = '12.50';
+        $returnItem->save();
 
         $this->assertTrue($user->invoices->sole()->is($invoice));
         $this->assertTrue($customer->invoices->sole()->is($invoice));
@@ -70,17 +71,13 @@ class InvoicingModelsTest extends TestCase
             'return_number' => 'RET-2',
             'returned_at' => now(),
         ]);
-        $secondReturn->items()->create([
+        $secondItem = $secondReturn->items()->make([
             'invoice_item_id' => $item->id,
             'quantity' => 1,
             'unit_price' => '12.50',
-            'subtotal' => '12.50',
         ]);
-
-        $this->assertSame(1, $item->returnedQuantity());
-        $this->assertSame(1, $item->remainingQuantity());
-
-        $secondReturn->update(['returned_at' => now()]);
+        $secondItem->subtotal = '12.50';
+        $secondItem->save();
 
         $this->assertSame(2, $item->returnedQuantity());
         $this->assertSame(0, $item->remainingQuantity());

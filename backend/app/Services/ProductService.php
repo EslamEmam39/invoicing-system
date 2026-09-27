@@ -2,17 +2,14 @@
 
 namespace App\Services;
 
-use App\Exceptions\ResourceInUseException;
+use App\Exceptions\Shared\ResourceInUseException;
 use App\Models\Product;
 use App\Repositories\ProductRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-
 class ProductService
 {
-    public function __construct(private readonly ProductRepository $repository)
-    {
-    }
+    public function __construct(private readonly ProductRepository $repository) {}
 
     public function paginate(int $perPage): LengthAwarePaginator
     {
@@ -31,7 +28,7 @@ class ProductService
 
     public function delete(Product $model): void
     {
-        if ($model->invoiceItems()->exists()) {
+        if ($this->repository->hasInvoices($model)) {
             throw new ResourceInUseException;
         }
 

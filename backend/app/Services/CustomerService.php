@@ -2,17 +2,14 @@
 
 namespace App\Services;
 
-use App\Exceptions\ResourceInUseException;
+use App\Exceptions\Shared\ResourceInUseException;
 use App\Models\Customer;
 use App\Repositories\CustomerRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
-
 class CustomerService
 {
-    public function __construct(private readonly CustomerRepository $repository)
-    {
-    }
+    public function __construct(private readonly CustomerRepository $repository) {}
 
     public function paginate(int $perPage): LengthAwarePaginator
     {
@@ -29,10 +26,9 @@ class CustomerService
         return $this->repository->update($model, $data);
     }
 
-
     public function delete(Customer $model): void
     {
-        if ($model->invoices()->exists()) {
+        if ($this->repository->hasInvoices($model)) {
             throw new ResourceInUseException;
         }
 

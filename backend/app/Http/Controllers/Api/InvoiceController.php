@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\IndexResourceRequest;
 use App\Http\Requests\Api\Invoice\StoreInvoiceRequest;
 use App\Http\Resources\InvoiceResource;
+use App\Http\Resources\PaginatedResourceCollection;
 use App\Models\Invoice;
 use App\Services\InvoiceService;
 use App\Traits\ApiResponse;
@@ -24,7 +25,7 @@ class InvoiceController extends Controller
     {
         $invoices = $this->service->paginate($request->user(), (int) $request->validated('per_page', 15));
 
-        return $this->successResponse(InvoiceResource::collection($invoices)->response()->getData(true));
+        return $this->paginatedResponse(new PaginatedResourceCollection($invoices, InvoiceResource::class));
     }
 
     public function store(StoreInvoiceRequest $request): JsonResponse

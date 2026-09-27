@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\Customer\CustomerRequest;
 use App\Http\Requests\Api\IndexResourceRequest;
 use App\Http\Resources\CustomerResource;
+use App\Http\Resources\PaginatedResourceCollection;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use App\Traits\ApiResponse;
@@ -24,7 +25,7 @@ class CustomerController extends Controller
     {
         $items = $this->service->paginate((int) $request->validated('per_page', 15));
 
-        return $this->successResponse(CustomerResource::collection($items)->response()->getData(true));
+        return $this->paginatedResponse(new PaginatedResourceCollection($items, CustomerResource::class));
     }
 
     public function store(CustomerRequest $request): JsonResponse

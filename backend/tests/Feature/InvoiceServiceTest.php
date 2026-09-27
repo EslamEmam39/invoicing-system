@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\InvoiceStatus;
-use App\Exceptions\InsufficientStockException;
-use App\Exceptions\ProductInactiveException;
+use App\Exceptions\Invoice\InsufficientStockException;
+use App\Exceptions\Invoice\ProductInactiveException;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -13,12 +13,26 @@ use App\Models\User;
 use App\Services\InvoiceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Validation\ValidationException;
 use RuntimeException;
 use Tests\TestCase;
 
 class InvoiceServiceTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_invoice_amount_overflow_is_rejected_without_stock_changes(): void
+    {
+        $product = $this->product('LIMIT', ['price' => '99999999.99', 'stock' => 10001]);
+        try {
+            $this->createInvoice([['product_id' => $product->id, 'quantity' => 10001]]);
+            $this->fail('Expected amount validation failure.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items', $exception->errors());
+        }
+        $this->assertDatabaseCount('invoices', 0);
+        $this->assertSame(10001, $product->fresh()->stock);
+    }
 
     private function product(string $sku, array $attributes = []): Product
     {

@@ -17,11 +17,14 @@ class ResourceCrudTest extends TestCase
     public function test_employee_crud_and_admin_deletion(): void
     {
         Sanctum::actingAs(User::factory()->create(['role' => UserRole::Employee]));
-        foreach (['products' => ['name' => 'Widget', 'sku' => 'SKU-1', 'price' => '10.50', 'stock' => 5], 'customers' => ['name' => 'Customer']] as $path => $payload) {
+        foreach ([
+            'products' => ['name' => 'Widget', 'sku' => 'SKU-1', 'price' => '10.50', 'stock' => 5],
+            'customers' => ['name' => 'Customer']
+        ] as $path => $payload) {
             $id = $this->postJson("/api/$path", $payload)->assertCreated()->assertJsonPath('success', true)->json('data.id');
             $this->getJson("/api/$path/$id")->assertOk()->assertJsonPath('data.name', $payload['name']);
             $this->patchJson("/api/$path/$id", ['name' => 'Updated'] + $payload)->assertOk()->assertJsonPath('data.name', 'Updated');
-            $this->getJson("/api/$path?per_page=1")->assertOk()->assertJsonPath('data.meta.per_page', 1);
+            $this->getJson("/api/$path?per_page=1")->assertOk()->assertJsonPath('meta.per_page', 1);
             $this->deleteJson("/api/admin/$path/$id")->assertForbidden();
             Sanctum::actingAs(User::factory()->create(['role' => UserRole::Admin]));
             $this->deleteJson("/api/$path/$id")->assertStatus(405);
@@ -44,7 +47,8 @@ class ResourceCrudTest extends TestCase
         $payload = ['name' => 'Widget', 'sku' => 'SKU-1', 'price' => 10, 'stock' => 0];
         $this->postJson('/api/products', $payload)->assertCreated();
         $this->postJson('/api/products', $payload)->assertUnprocessable()->assertJsonValidationErrors('sku');
-        $this->postJson('/api/products', ['sku' => 'SKU-2', 'price' => -1, 'stock' => -1] + $payload)->assertUnprocessable()->assertJsonValidationErrors(['price', 'stock']);
+        $this->postJson('/api/products', ['sku' => 'SKU-2', 'price' => -1, 'stock' => -1] + $payload)
+            ->assertUnprocessable()->assertJsonValidationErrors(['price', 'stock']);
     }
 
     public function test_linked_records_cannot_be_deleted(): void
