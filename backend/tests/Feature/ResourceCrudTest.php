@@ -22,9 +22,10 @@ class ResourceCrudTest extends TestCase
             $this->getJson("/api/$path/$id")->assertOk()->assertJsonPath('data.name', $payload['name']);
             $this->patchJson("/api/$path/$id", ['name' => 'Updated'] + $payload)->assertOk()->assertJsonPath('data.name', 'Updated');
             $this->getJson("/api/$path?per_page=1")->assertOk()->assertJsonPath('data.meta.per_page', 1);
-            $this->deleteJson("/api/$path/$id")->assertForbidden();
+            $this->deleteJson("/api/admin/$path/$id")->assertForbidden();
             Sanctum::actingAs(User::factory()->create(['role' => UserRole::Admin]));
-            $this->deleteJson("/api/$path/$id")->assertOk();
+            $this->deleteJson("/api/$path/$id")->assertStatus(405);
+            $this->deleteJson("/api/admin/$path/$id")->assertOk();
             $this->getJson("/api/$path/$id")->assertNotFound();
             Sanctum::actingAs(User::factory()->create(['role' => UserRole::Employee]));
         }
@@ -34,6 +35,8 @@ class ResourceCrudTest extends TestCase
     {
         $this->getJson('/api/products')->assertUnauthorized();
         $this->getJson('/api/customers')->assertUnauthorized();
+        $this->deleteJson('/api/admin/products/1')->assertUnauthorized();
+        $this->deleteJson('/api/admin/customers/1')->assertUnauthorized();
         Sanctum::actingAs(User::factory()->create());
         $this->postJson('/api/products', [])->assertUnprocessable()->assertJsonPath('success', false);
         $this->postJson('/api/customers', [])->assertUnprocessable();
@@ -54,8 +57,8 @@ class ResourceCrudTest extends TestCase
         $item = $invoice->items()->make(['product_id' => $product->id, 'quantity' => 1, 'unit_price' => 10]);
         $item->subtotal = 10;
         $item->save();
-        $this->deleteJson("/api/customers/{$customer->id}")->assertConflict()->assertJsonPath('success', false);
-        $this->deleteJson("/api/products/{$product->id}")->assertConflict();
+        $this->deleteJson("/api/admin/customers/{$customer->id}")->assertConflict()->assertJsonPath('success', false);
+        $this->deleteJson("/api/admin/products/{$product->id}")->assertConflict();
         $this->assertDatabaseHas('products', ['id' => $product->id]);
         $this->assertDatabaseHas('customers', ['id' => $customer->id]);
     }

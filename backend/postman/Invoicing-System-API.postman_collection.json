@@ -162,7 +162,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{base_url}}/api/products/{{product_id}}"
+        "url": "{{base_url}}/api/admin/products/{{product_id}}"
       }
     }
   ]
@@ -311,7 +311,7 @@
             "value": "application/json"
           }
         ],
-        "url": "{{base_url}}/api/customers/{{customer_id}}"
+        "url": "{{base_url}}/api/admin/customers/{{customer_id}}"
       }
     }
   ]
