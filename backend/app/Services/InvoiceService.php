@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\InvoiceStatus;
 use App\Exceptions\InsufficientStockException;
+use App\Exceptions\InvoiceCancellationException;
 use App\Exceptions\ProductInactiveException;
 use App\Models\Invoice;
 use App\Models\Product;
@@ -30,6 +31,46 @@ class InvoiceService
     public function show(Invoice $invoice): Invoice
     {
         return $invoice->load(['customer', 'items.product']);
+    }
+
+    public function cancel(Invoice $invoice): Invoice
+    {
+        return DB::transaction(function () use ($invoice): Invoice {
+            // Re-read under lock: route binding may contain stale status.
+            $lockedInvoice = Invoice::query()->lockForUpdate()->findOrFail($invoice->getKey());
+
+            if ($lockedInvoice->status !== InvoiceStatus::Issued) {
+                throw new InvoiceCancellationException('This invoice has already been cancelled.');
+            }
+
+            if ($lockedInvoice->returns()->exists()) {
+                throw new InvoiceCancellationException('An invoice with returns cannot be cancelled.');
+            }
+
+            $items = $lockedInvoice->items()->orderBy('product_id')->get();
+            $products = Product::query()
+                ->whereIn('id', $items->pluck('product_id'))
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            foreach ($items as $item) {
+                $product = $products->get($item->product_id);
+                if (! $product || $product->stock > 4294967295 - $item->quantity) {
+                    throw new InvoiceCancellationException('The invoice stock cannot be restored within the supported limits.');
+                }
+            }
+
+            foreach ($items as $item) {
+                $products->get($item->product_id)->increment('stock', $item->quantity);
+            }
+
+            $lockedInvoice->status = InvoiceStatus::Cancelled;
+            $lockedInvoice->save();
+
+            return $lockedInvoice->load(['customer', 'items.product']);
+        }, 3);
     }
 
     public function create(array $data, User $user): Invoice
@@ -84,19 +125,19 @@ class InvoiceService
             ]);
 
             foreach ($lines as [$product, $quantity, $subtotal]) {
-                $invoice->items()->create([
+                $line = $invoice->items()->make([
                     'product_id' => $product->id,
                     'quantity' => $quantity,
                     'unit_price' => $product->price,
-                    'subtotal' => $subtotal,
                 ]);
+                $line->subtotal = $subtotal;
+                $line->save();
                 $product->decrement('stock', $quantity);
             }
 
-            $invoice->update([
-                'total' => $total,
-                'invoice_number' => 'INV-' . str_pad((string) $invoice->id, 6, '0', STR_PAD_LEFT),
-            ]);
+            $invoice->total = $total;
+            $invoice->invoice_number = 'INV-' . str_pad((string) $invoice->id, 6, '0', STR_PAD_LEFT);
+            $invoice->save();
 
             return $invoice->load(['customer', 'items.product']);
         }, 3);

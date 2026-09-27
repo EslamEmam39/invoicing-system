@@ -38,4 +38,14 @@ class InvoiceController extends Controller
     {
         return $this->successResponse(new InvoiceResource($this->service->show($invoice)));
     }
+
+    public function cancel(Invoice $invoice): JsonResponse
+    {
+        $this->authorize('cancel', $invoice);
+
+        return $this->successResponse(
+            new InvoiceResource($this->service->cancel($invoice)),
+            'Invoice cancelled successfully.',
+        );
+    }
 }
